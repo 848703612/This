@@ -1,0 +1,453 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+// 定义魔方的颜色
+enum Color { RED, BLUE, GREEN, WHITE, YELLOW, ORANGE };
+
+// 定义魔方的转动方式
+enum Rotation { CLOCKWISE, COUNTERCLOCKWISE, DOUBLE };
+
+// 定义魔方的状态
+struct CubeState {
+	Color up[3][3];      // 上层
+	Color down[3][3];    // 下层
+	Color left[3][3];    // 左层
+	Color right[3][3];   // 右层
+	Color front[3][3];   // 前层
+	Color back[3][3];    // 后层
+};
+
+// 定义魔方操作
+class Cube {
+	public:
+		void rotate(Color face, Rotation rotation) {
+			// 定义一个临时数组，用于存储需要旋转的面的颜色
+			Color temp[3][3];
+
+			// 根据旋转方式调整魔方状态
+			switch (face) {
+				case RED:
+					// 根据旋转方式调整 red 面的状态
+					switch (rotation) {
+						case CLOCKWISE:
+							// 将 up 面向右旋转一次，将 front 面上下颠倒后向右旋转一次，将 down 面向右旋转一次，将 back 面上下颠倒后向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = up[i][2];
+								up[i][2] = front[i][2];
+								front[i][2] = down[i][2];
+								down[i][2] = back[2 - i][0];
+								back[2 - i][0] = temp[i][2];
+							}
+							// 将 red 面向右旋转一次
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = right[2 - j][i];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									right[i][j] = temp[i][j];
+								}
+							}
+							break;
+						case COUNTERCLOCKWISE:
+							// 将 up 面向左旋转一次，将 front 面上下颠倒后向左旋转一次，将 down 面向左旋转一次，将 back 面上下颠倒后向右旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = up[i][2];
+								up[i][2] = back[2 - i][0];
+								back[2 - i][0] = down[i][2];
+								down[i][2] = front[i][2];
+								front[i][2] = temp[i][2];
+							}
+							// 将 red 面向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = right[j][2 - i];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									right[i][j] = temp[i][j];
+								}
+							}
+							break;
+						case DOUBLE:
+							// 将 up 面向右旋转一次，将 front 面上下颠倒后向右旋转一次，将 down 面向左旋转一次，将 back 面上下颠倒后向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = up[i][2];
+								up[i][2] = down[2 - i][2];
+								down[i][2] = temp[i][2];
+							}
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = front[i][2];
+								front[i][2] = back[2 - i][0];
+								back[2 - i][0] = temp[i][2];
+							}
+							// 将 red 面旋转180度
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = right[2 - i][2 - j];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									right[i][j] = temp[i][j];
+								}
+							}
+							break;
+					}
+					break;
+				case BLUE:
+					// 根据旋转方式调整 blue 面的状态
+					for (int i = 0; i < 3; i++) {
+						for (int j = 0; j < 3; j++) {
+							temp[i][j] = front[i][j];
+						}
+					}
+					if (rotation == CLOCKWISE) {
+						front[0][0] = temp[2][0];
+						front[0][1] = temp[1][0];
+						front[0][2] = temp[0][0];
+						front[1][0] = temp[2][1];
+						front[1][2] = temp[0][1];
+						front[2][0] = temp[2][2];
+						front[2][1] = temp[1][2];
+						front[2][2] = temp[0][2];
+						for (int i = 0; i < 3; i++) {
+							right[i][0] = down[0][i];
+							down[0][i] = left[2 - i][2];
+							left[2 - i][2] = up[2][2 - i];
+							up[2][2 - i] = temp[i][0];
+						}
+					} else if (rotation == COUNTERCLOCKWISE) {
+						front[0][0] = temp[0][2];
+						front[0][1] = temp[1][2];
+						front[0][2] = temp[2][2];
+						front[1][0] = temp[0][1];
+						front[1][2] = temp[2][1];
+						front[2][0] = temp[0][0];
+						front[2][1] = temp[1][0];
+						front[2][2] = temp[2][0];
+						for (int i = 0; i < 3; i++) {
+							left[2 - i][2] = down[0][i];
+							down[0][i] = right[i][0];
+							right[i][0] = up[2][2 - i];
+							up[2][2 - i] = temp[i][0];
+						}
+					} else if (rotation == DOUBLE) {
+						front[0][0] = temp[2][2];
+						front[0][1] = temp[2][1];
+						front[0][2] = temp[2][0];
+						front[1][0] = temp[1][2];
+						front[1][2] = temp[1][0];
+						front[2][0] = temp[0][2];
+						front[2][1] = temp[0][1];
+						front[2][2] = temp[0][0];
+						for (int i = 0; i < 3; i++) {
+							up[2][2 - i] = down[0][i];
+							down[0][i] = temp[2 - i][0];
+							temp[i][0] = left[2 - i][2];
+							left[2 - i][2] = right[i][0];
+							right[i][0] = temp[i][0];
+						}
+					}
+					break;
+
+				case GREEN:
+					// 根据旋转方式调整 green 面的状态
+					for (int i = 0; i < 3; i++) {
+						for (int j = 0; j < 3; j++) {
+							temp[i][j] = front[2 - j][i];
+						}
+					}
+					if (rotation == CLOCKWISE) {
+						for (int i = 0; i < 3; i++) {
+							front[i][0] = down[2 - i][0];
+							down[2 - i][0] = back[2 - i][2];
+							back[2 - i][2] = up[i][0];
+							up[i][0] = temp[i][0];
+						}
+						for (int i = 0; i < 3; i++) {
+							right[i][2] = down[2 - i][2];
+							down[2 - i][2] = left[i][0];
+							left[i][0] = up[i][2];
+							up[i][2] = temp[i][2];
+						}
+					} else if (rotation == COUNTERCLOCKWISE) {
+						for (int i = 0; i < 3; i++) {
+							front[i][0] = up[i][0];
+							up[i][0] = back[2 - i][2];
+							back[2 - i][2] = down[2 - i][0];
+							down[2 - i][0] = temp[i][0];
+						}
+						for (int i = 0; i < 3; i++) {
+							left[i][0] = down[i][2];
+							down[i][2] = right[2 - i][2];
+							right[2 - i][2] = up[i][2];
+							up[i][2] = temp[i][2];
+						}
+					} else if (rotation == DOUBLE) {
+						for (int i = 0; i < 3; i++) {
+							front[i][0] = down[2 - i][0];
+							down[2 - i][0] = temp[i][0];
+							temp[i][0] = up[i][0];
+							up[i][0] = back[2 - i][2];
+							back[2 - i][2] = temp[i][0];
+						}
+						for (int i = 0; i < 3; i++) {
+							right[i][2] = down[2 - i][2];
+							down[2 - i][2] = temp[i][2];
+							temp[i][2] = up[i][2];
+							up[i][2] = left[i][0];
+							left[i][0] = temp[i][2];
+						}
+					}
+					break;
+				//补全之后的代码，这段代码是使用Thistlethwaite实现魔方的复原
+				case WHITE:
+					// 根据旋转方式调整 white 面的状态
+					switch (rotation) {
+						case CLOCKWISE:
+							// 将 up 面向下旋转一次，将 left 面向右旋转一次，将 down 面向上旋转一次，将 right 面向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[2][i] = up[2][i];
+								up[2][i] = right[2 - i][2];
+								right[2 - i][2] = down[0][2 - i];
+								down[0][2 - i] = left[i][0];
+								left[i][0] = temp[2][i];
+							}
+							// 将 white 面向右旋转一次
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = front[2 - j][i];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									front[i][j] = temp[i][j];
+								}
+							}
+							break;
+						case COUNTERCLOCKWISE:
+							// 将 up 面向上旋转一次，将 left 面向左旋转一次，将 down 面向下旋转一次，将 right 面向右旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[2][i] = up[2][i];
+								up[2][i] = left[i][0];
+								left[i][0] = down[0][2 - i];
+								down[0][2 - i] = right[2 - i][2];
+								right[2 - i][2] = temp[2][i];
+							}
+							// 将 white 面向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = front[j][2 - i];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									front[i][j] = temp[i][j];
+								}
+							}
+							break;
+						case DOUBLE:
+							// 将 up 面向下旋转一次，将 left 面向右旋转一次，将 down 面向上旋转一次，将 right 面向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[2][i] = up[2][i];
+								up[2][i] = down[0][2 - i];
+								down[0][2 - i] = temp[2][i];
+							}
+							for (int i = 0; i < 3; i++) {
+								temp[i][0] = left[i][0];
+								left[i][0] = right[2 - i][2];
+								right[2 - i][2] = temp[i][0];
+							}
+							// 将 white 面旋转180度
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = front[2 - i][2 - j];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									front[i][j] = temp[i][j];
+								}
+							}
+							break;
+					}
+					break;
+				case YELLOW:
+					// 根据旋转方式调整 yellow 面的状态
+					switch (rotation) {
+						case CLOCKWISE:
+							for (int i = 0; i < 3; i++) {
+								swap(front[2][i], right[2][i]);
+								swap(right[2][i], back[2][i]);
+								swap(back[2][i], left[2][i]);
+								swap(left[2][i], front[2][i]);
+							}
+							for (int i = 0; i < 3; i++) {
+								swap(up[0][i], up[2][i]);
+								swap(up[0][i], down[2][i]);
+								swap(down[0][i], down[2][i]);
+							}
+							break;
+						case COUNTERCLOCKWISE:
+							for (int i = 0; i < 3; i++) {
+								swap(front[2][i], left[2][i]);
+								swap(left[2][i], back[2][i]);
+								swap(back[2][i], right[2][i]);
+								swap(right[2][i], front[2][i]);
+							}
+							for (int i = 0; i < 3; i++) {
+								swap(up[0][i], down[2][i]);
+								swap(up[0][i], up[2][i]);
+								swap(down[0][i], down[2][i]);
+							}
+							break;
+						case DOUBLE:
+							for (int i = 0; i < 3; i++) {
+								swap(front[2][i], back[2][i]);
+								swap(right[2][i], left[2][i]);
+							}
+							for (int i = 0; i < 3; i++) {
+								swap(up[0][i], down[2][i]);
+								swap(up[2][i], down[0][i]);
+							}
+							break;
+					}
+					break;
+				case ORANGE:
+					// 根据旋转方式调整 orange 面的状态
+					switch (rotation) {
+						case CLOCKWISE:
+							// 将 up 面向左旋转一次，将 right 面上下颠倒后向左旋转一次，将 down 面向右旋转一次，将 left 面上下颠倒后向右旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = up[i][0];
+								up[i][0] = left[2 - i][2];
+								left[2 - i][2] = down[i][0];
+								down[i][0] = right[2 - i][0];
+								right[2 - i][0] = temp[i][2];
+							}
+							// 将 orange 面向右旋转一次
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = back[2 - j][i];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									back[i][j] = temp[i][j];
+								}
+							}
+							break;
+						case COUNTERCLOCKWISE:
+							// 将 up 面向右旋转一次，将 right 面上下颠倒后向右旋转一次，将 down 面向左旋转一次，将 left 面上下颠倒后向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = up[i][0];
+								up[i][0] = right[2 - i][0];
+								right[2 - i][0] = down[i][0];
+								down[i][0] = left[2 - i][2];
+								left[2 - i][2] = temp[i][2];
+							}
+							// 将 orange 面向左旋转一次
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = back[j][2 - i];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									back[i][j] = temp[i][j];
+								}
+							}
+							break;
+						case DOUBLE:
+							// 将 up 面向左旋转一次，将 right 面上下颠倒后向左旋转一次，将 down 面向右旋转一次，将 left 面上下颠倒后向右旋转一次
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = up[i][0];
+								up[i][0] = down[2 - i][0];
+								down[i][0] = temp[i][2];
+							}
+							for (int i = 0; i < 3; i++) {
+								temp[i][2] = right[2 - i][0];
+								right[2 - i][0] = left[i][2];
+								left[i][2] = temp[i][2];
+							}
+							// 将 orange 面旋转180度
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									temp[i][j] = back[2 - i][2 - j];
+								}
+							}
+							for (int i = 0; i < 3; i++) {
+								for (int j = 0; j < 3; j++) {
+									back[i][j] = temp[i][j];
+								}
+							}
+							break;
+					}
+					break; // 退出switch语句
+
+
+
+				default:
+					cout << "无效的面颜色" << endl;
+					break;
+			}
+		}
+
+		CubeState getState() const {
+			// 创建一个新的 CubeState 对象，用于存储当前魔方状态
+			CubeState state;
+
+			// 将当前魔方状态复制到新的 CubeState 对象中
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 3; j++) {
+					state.up[i][j] = up[i][j];
+					state.down[i][j] = down[i][j];
+					state.left[i][j] = left[i][j];
+					state.right[i][j] = right[i][j];
+					state.front[i][j] = front[i][j];
+					state.back[i][j] = back[i][j];
+				}
+			}
+
+			// 返回新的 CubeState 对象
+			return state;
+		}
+
+	private:
+		Color up[3][3] = {{YELLOW, YELLOW, YELLOW}, {YELLOW, YELLOW, YELLOW}, {YELLOW, YELLOW, YELLOW}};      // 上层
+		Color down[3][3] = {{WHITE, WHITE, WHITE}, {WHITE, WHITE, WHITE}, {WHITE, WHITE, WHITE}};    // 下层
+		Color left[3][3] = {{ORANGE, ORANGE, ORANGE}, {ORANGE, ORANGE, ORANGE}, {ORANGE, ORANGE, ORANGE}};    // 左层
+		Color right[3][3] = {{RED, RED, RED}, {RED, RED, RED}, {RED, RED, RED}};   // 右层
+		Color front[3][3] = {{GREEN, GREEN, GREEN}, {GREEN, GREEN, GREEN}, {GREEN, GREEN, GREEN}};   // 前层
+		Color back[3][3] = {{BLUE, BLUE, BLUE}, {BLUE, BLUE, BLUE}, {BLUE, BLUE, BLUE}};    // 后层
+};
+
+// Thistlethwaite 算法类
+class ThistlethwaiteSolver {
+	public:
+		void solve(CubeState state) {
+			// 使用 Thistlethwaite 算法解决魔方
+			// TODO: 实现 Thistlethwaite 算法的解决逻辑
+		}
+};
+
+int main() {
+	// 创建魔方对象
+	Cube cube;
+
+	// 获取初始魔方状态
+	CubeState initialState = cube.getState();
+
+	// 创建 ThistlethwaiteSolver 对象
+	ThistlethwaiteSolver solver;
+
+	// 使用 Thistlethwaite 算法解决魔方
+	solver.solve(initialState);
+
+	return 0;
+}
